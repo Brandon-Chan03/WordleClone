@@ -16,14 +16,16 @@ export const AppContext = createContext();
 function App() {
   const [board, setBoard] = useState(boardDefault)
   const [currentAttempt, setCurrentAttempt ] = useState({attempt: 0, letterPos: 0})
-
-  const correctWord = 'RIGHT'
+  const [wordSet, setWordSet] = useState(new Set())
+  const [disabledLetters, setDisabledLetters] = useState([])
+  const [correctWord, setCorrectWord] = useState('')
 
   useEffect(() => {
     generateWordSet().then((words) => {
-      console.log(words)
+      setWordSet(words.wordSet)
+      setCorrectWord(words.todaysWord)
     })
-  },[currentAttempt.attempt])
+  },[])
 
   const onSelectLetter = (keyVal) => {
     if (currentAttempt.letterPos > 4) return;
@@ -43,7 +45,24 @@ function App() {
 
   const onEnter = () => {
     if(currentAttempt.letterPos !== 5) return;
-    setCurrentAttempt({ attempt: currentAttempt.attempt + 1, letterPos: 0 })
+
+    let currentWord = '';
+    for (let i = 0; i < 5; i++ ) {
+      currentWord += board[currentAttempt.attempt][i];
+    }
+
+    if (wordSet.has(currentWord.toLowerCase())) {
+      setCurrentAttempt({ attempt: currentAttempt.attempt + 1, letterPos: 0 })
+    }
+
+    if (currentWord === correctWord) {
+      alert('You guessed the word')
+    }
+
+    if (currentAttempt.attempt === 5) {
+      console.log(correctWord)
+    }
+
   }
 
   return (
@@ -51,7 +70,18 @@ function App() {
       <nav>
         <h1>Wordle</h1>
       </nav>
-      <AppContext.Provider value={{ board, setBoard, currentAttempt, setCurrentAttempt, onSelectLetter, onDelete, onEnter, correctWord }}>
+      <AppContext.Provider value={{ 
+        board, 
+        setBoard, 
+        currentAttempt, 
+        setCurrentAttempt, 
+        onSelectLetter, 
+        onDelete, 
+        onEnter, 
+        correctWord,
+        setDisabledLetters,
+        disabledLetters
+        }}>
         <div className='game'>
           <Board />
           <Keyboard />
